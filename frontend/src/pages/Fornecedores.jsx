@@ -1,0 +1,19 @@
+import React, { useEffect, useState } from 'react';
+import { EmptyState, ErrorState, LoadingState, Pagination } from '../components/AsyncState.jsx';
+import { Status } from '../components/StatusBadge.jsx';
+import SupplierFormModal from '../components/SupplierFormModal.jsx';
+import ConfirmModal from '../components/ConfirmModal.jsx';
+import { useToast } from '../components/ToastContext.jsx';
+import { deleteFornecedor, listFornecedores } from '../services/fornecedorService.js';
+
+export default function Fornecedores() {
+  const [searchInput, setSearchInput] = useState(''); const [search, setSearch] = useState(''); const [page, setPage] = useState(1); const [result, setResult] = useState({ data: [], pagination: {} }); const [loading, setLoading] = useState(false); const [error, setError] = useState(''); const [modal, setModal] = useState(false); const [editing, setEditing] = useState(null); const [deleteTarget, setDeleteTarget] = useState(null); const [deleting, setDeleting] = useState(false); const showToast = useToast();
+  useEffect(() => { const timeout = setTimeout(() => { setSearch(searchInput); setPage(1); }, 400); return () => clearTimeout(timeout); }, [searchInput]);
+  const load = async () => { setLoading(true); setError(''); try { setResult(await listFornecedores({ page, limit: 10, search })); } catch (err) { setError(err.message || 'Não foi possível carregar os fornecedores.'); } finally { setLoading(false); } };
+  useEffect(() => { load(); }, [page, search]);
+  const remove = async () => { setDeleting(true); try { await deleteFornecedor(deleteTarget.id); showToast('Fornecedor excluído com sucesso.'); setDeleteTarget(null); load(); } catch (err) { showToast(err.message); } finally { setDeleting(false); } };
+  const success = (message) => { showToast(message); load(); };
+  return <><div className="page-toolbar"><div><div className="page-heading">Fornecedores</div><div className="page-sub">Dados reais da API PharmaSmart</div></div><button className="btn btn-primary" onClick={() => { setEditing(null); setModal(true); }}>＋ Cadastrar Fornecedor</button></div><div className="card"><div className="card-header"><div className="search-bar"><span>⌕</span><input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Buscar por nome ou CNPJ..." /></div></div>{loading ? <LoadingState message="Carregando fornecedores..." /> : error ? <ErrorState message={error} onRetry={load} /> : <table><thead><tr><th>Fornecedor</th><th>CNPJ</th><th>Telefone</th><th>E-mail</th><th>Status</th><th>Ações</th></tr></thead><tbody>{result.data.length === 0 ? <tr><td colSpan="6"><EmptyState message="Nenhum fornecedor cadastrado." /></td></tr> : result.data.map((item) => <tr key={item.id}><td className="strong">{item.nome}</td><td className="muted">{formatCnpj(item.cnpj)}</td><td>{item.telefone || '—'}</td><td className="muted">{item.email || '—'}</td><td><Status>Disponível</Status></td><td className="action-cell"><button className="btn btn-ghost" onClick={() => { setEditing(item); setModal(true); }}>Editar</button><button className="btn btn-danger" onClick={() => setDeleteTarget(item)}>Excluir</button></td></tr>)}</tbody></table>}</div><Pagination page={result.pagination.page} totalPages={result.pagination.totalPages} onChange={setPage} /><SupplierFormModal open={modal} supplier={editing} onClose={() => setModal(false)} onSuccess={success} onError={(err) => showToast(err.message)} /><ConfirmModal open={Boolean(deleteTarget)} message="Tem certeza que deseja excluir este fornecedor? Pedidos relacionados bloqueiam a exclusão." onClose={() => setDeleteTarget(null)} onConfirm={remove} loading={deleting} /></>;
+}
+
+function formatCnpj(value) { if (!value) return '—'; const digits = value.replace(/\D/g, ''); return digits.length === 14 ? digits.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') : value; }

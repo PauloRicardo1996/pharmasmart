@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PharmaSmart</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --blue-50:#EFF6FF;
+  --blue-100:#DBEAFE;
+  --blue-200:#BFDBFE;
+  --blue-300:#93C5FD;
+  --blue-400:#60A5FA;
+  --blue-500:#3B82F6;
+  --blue-600:#2563EB;
+  --blue-700:#1D4ED8;
+  --blue-800:#1E40AF;
+  --blue-900:#1E3A8A;
+  --sidebar-bg:#1E3A8A;
+  --sidebar-hover:#1D4ED8;
+  --green:#10B981;
+  --green-light:#D1FAE5;
+  --amber:#F59E0B;
+  --amber-light:#FEF3C7;
+  --red:#EF4444;
+  --red-light:#FEE2E2;
+  --bg:#F0F4FF;
+  --white:#FFFFFF;
+  --text:#0F172A;
+  --text-muted:#64748B;
+  --border:#E2E8F0;
+  --card:#FFFFFF;
+  --radius:12px;
+  --shadow:0 1px 3px rgba(30,58,138,.07),0 1px 2px rgba(30,58,138,.04);
+  --shadow-md:0 4px 16px rgba(30,58,138,.1);
+}
+
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+
+/* ─── LOGIN ─── */
+.login-screen{
+  display:flex;height:100vh;
+}
+.login-left{
+  width:42%;background:linear-gradient(145deg,var(--blue-900) 0%,var(--blue-700) 60%,var(--blue-500) 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px;
+  position:relative;overflow:hidden;
+}
+.login-left::before{
+  content:'';position:absolute;width:400px;height:400px;border-radius:50%;
+  background:rgba(255,255,255,0.04);top:-100px;left:-100px;
+}
+.login-left::after{
+  content:'';position:absolute;width:300px;height:300px;border-radius:50%;
+  background:rgba(255,255,255,0.05);bottom:-80px;right:-60px;
+}
+.login-brand{position:relative;z-index:1;text-align:center}
+.login-brand .logo{
+  font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:#fff;letter-spacing:-0.5px;
+}
+.login-brand .logo span{color:var(--blue-300)}
+.login-brand .tagline{color:rgba(255,255,255,0.55);font-size:14px;margin-top:8px}
+.login-pills{
+  position:relative;z-index:1;margin-top:48px;display:flex;flex-direction:column;gap:12px;width:100%;
+}
+.login-pill{
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);
+  border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:12px;
+}
+.login-pill-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.login-pill-text{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.4}
+
+.login-right{
+  flex:1;display:flex;align-items:center;justify-content:center;background:var(--white);
+}
+.login-form-wrap{width:380px}
+.login-form-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--text);margin-bottom:6px}
+.login-form-sub{font-size:14px;color:var(--text-muted);margin-bottom:32px}
+.form-group{margin-bottom:18px}
+.form-label{font-size:12px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em}
+.form-input{
+  width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;
+  font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;
+  transition:border-color .15s,box-shadow .15s;background:var(--white);
+}
+.form-input:focus{border-color:var(--blue-500);box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+.form-select{
+  width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;
+  font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;
+  background:var(--white);cursor:pointer;
+  transition:border-color .15s;
+}
+.form-select:focus{border-color:var(--blue-500)}
+.btn-login{
+  width:100%;padding:13px;background:var(--blue-600);color:#fff;border:none;
+  border-radius:9px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:background .15s;margin-top:8px;
+}
+.btn-login:hover{background:var(--blue-700)}
+.login-hint{font-size:12px;color:var(--text-muted);text-align:center;margin-top:16px}
+
+/* ─── APP SHELL ─── */
+.app{display:none;height:100vh;flex-direction:row}
+.app.visible{display:flex}
+
+/* ─── SIDEBAR ─── */
+.sidebar{
+  width:234px;background:var(--sidebar-bg);display:flex;flex-direction:column;
+  flex-shrink:0;padding:0 0 24px;
+}
+.sidebar-logo{padding:26px 22px 22px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:6px}
+.brand{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;color:#fff}
+.brand span{color:var(--blue-300)}
+.tagline{font-size:11px;color:rgba(255,255,255,0.3);margin-top:2px}
+.nav-section{padding:6px 10px}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:.08em;color:rgba(255,255,255,.22);text-transform:uppercase;padding:12px 12px 6px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;
+  cursor:pointer;color:rgba(255,255,255,.5);font-size:13.5px;transition:all .15s;margin-bottom:2px;
+}
+.nav-item:hover{background:var(--sidebar-hover);color:rgba(255,255,255,.85)}
+.nav-item.active{background:var(--blue-500);color:#fff;font-weight:500}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px}
+.sidebar-footer{margin-top:auto;padding:16px 20px 0;border-top:1px solid rgba(255,255,255,.08)}
+.user-row{display:flex;align-items:center;gap:10px}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:var(--blue-500);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-size:13px;font-weight:500;color:rgba(255,255,255,.8)}
+.user-role{font-size:11px;color:rgba(255,255,255,.3)}
+.btn-logout{
+  display:flex;align-items:center;gap:6px;background:transparent;border:none;
+  color:rgba(255,255,255,.35);font-size:12px;cursor:pointer;padding:8px 0 0;font-family:'DM Sans',sans-serif;
+  transition:color .15s;
+}
+.btn-logout:hover{color:rgba(255,255,255,.65)}
+
+/* ─── MAIN ─── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{
+  background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;
+  height:58px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.topbar-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.content{flex:1;overflow-y:auto;padding:26px 28px}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:'DM Sans',sans-serif}
+.btn-primary{background:var(--blue-600);color:#fff}
+.btn-primary:hover{background:var(--blue-700)}
+.btn-ghost{background:transparent;color:var(--text-muted);border:1.5px solid var(--border)}
+.btn-ghost:hover{background:var(--bg)}
+.btn-danger{background:var(--red-light);color:var(--red);border:none}
+
+/* ─── PAGES ─── */
+.page{display:none}
+.page.active{display:block}
+
+/* ─── KPI GRID ─── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.kpi-card{background:var(--card);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.kpi-label{font-size:11.5px;color:var(--text-muted);font-weight:500;margin-bottom:6px}
+.kpi-value{font-family:'Syne',sans-serif;font-size:27px;font-weight:700;color:var(--text);line-height:1}
+.kpi-meta{font-size:11px;color:var(--text-muted);margin-top:5px}
+
+/* ─── CARD ─── */
+.card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+.card-header{padding:16px 18px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13.5px;font-weight:600;color:var(--text)}
+.card-sub{font-size:11.5px;color:var(--text-muted);margin-top:2px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+.grid-3{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:22px}
+
+/* ─── TABLE ─── */
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;padding:10px 14px;text-align:left;background:#F8FAFF;border-bottom:1px solid var(--border)}
+td{padding:11px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#F8FAFF}
+
+/* ─── CHIPS / BADGES ─── */
+.chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.chip-blue{background:var(--blue-100);color:var(--blue-700)}
+.chip-green{background:var(--green-light);color:#065F46}
+.chip-amber{background:var(--amber-light);color:#92400E}
+.chip-red{background:var(--red-light);color:#991B1B}
+
+.status-dot{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-green{background:var(--green)}
+.dot-amber{background:var(--amber)}
+.dot-red{background:var(--red)}
+.dot-blue{background:var(--blue-500)}
+
+/* ─── SEARCH ─── */
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 13px;width:240px}
+.search-bar input{border:none;outline:none;font-size:13px;font-family:'DM Sans',sans-serif;background:transparent;width:100%;color:var(--text)}
+
+/* ─── TABS ─── */
+.tabs{display:flex;gap:3px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:3px;width:fit-content}
+.tab{padding:6px 13px;border-radius:6px;font-size:12.5px;font-weight:500;cursor:pointer;color:var(--text-muted);transition:all .15s}
+.tab.active{background:var(--blue-600);color:#fff}
+
+/* ─── PROGRESS ─── */
+.progress-item{padding:10px 18px;border-bottom:1px solid var(--border)}
+.progress-item:last-child{border-bottom:none}
+.progress-header{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px}
+.progress-label{font-weight:500}
+.progress-val{color:var(--text-muted);font-size:12px}
+.progress-bar{height:5px;background:#EFF6FF;border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px}
+
+/* ─── ALERT ITEMS ─── */
+.alert-item{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);font-size:13px}
+.alert-item:last-child{border-bottom:none}
+.alert-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.alert-name{font-weight:500;color:var(--text)}
+.alert-desc{font-size:11px;color:var(--text-muted)}
+
+/* ─── SUGESTÃO CARD ─── */
+.rec-item{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border)}
+.rec-item:last-child{border-bottom:none}
+.rec-rank{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#CBD5E1;width:26px;flex-shrink:0}
+.rec-info{flex:1}
+.rec-name{font-size:13.5px;font-weight:600}
+.rec-meta{font-size:11.5px;color:var(--text-muted);margin-top:2px}
+.rec-qty-val{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--blue-600);text-align:right}
+.rec-qty-label{font-size:10px;color:var(--text-muted);text-align:right}
+
+/* ─── DROPZONE ─── */
+.dropzone{border:2px dashed var(--border);border-radius:var(--radius);padding:44px;text-align:center;cursor:pointer;transition:all .15s;background:var(--white)}
+.dropzone:hover{border-color:var(--blue-500);background:var(--blue-50)}
+
+/* ─── MODAL ─── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:16px;padding:26px;width:500px;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:3px}
+.modal-sub{font-size:13px;color:var(--text-muted);margin-bottom:22px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--blue-900);color:#fff;padding:11px 17px;border-radius:10px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.2);transform:translateY(70px);opacity:0;transition:all .3s;z-index:200}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-dot{width:7px;height:7px;border-radius:50%;background:var(--blue-300)}
+
+/* ─── TOPBAR ICON BTN ─── */
+.icon-btn{width:36px;height:36px;border-radius:8px;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+.icon-btn .notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--red);border:2px solid var(--white)}
+
+/* ─── MINI CHART ─── */
+.chart-bars{display:flex;align-items:flex-end;gap:5px;height:68px;padding:0 18px 14px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bar{width:100%;border-radius:4px 4px 0 0;cursor:pointer;transition:opacity .15s}
+.bar:hover{opacity:.75}
+.bar-label{font-size:9px;color:var(--text-muted)}
+
+/* ─── BANNER ─── */
+.banner{background:linear-gradient(135deg,var(--blue-900) 0%,var(--blue-700) 100%);border-radius:var(--radius);padding:18px 22px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between}
+.banner-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff}
+.banner-sub{font-size:12.5px;color:rgba(255,255,255,.5);margin-top:2px}
+
+/* ─── CONFIGURAÇÕES ─── */
+.config-section{margin-bottom:28px}
+.config-section-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.config-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.config-row:last-child{border-bottom:none}
+.config-label{font-size:13.5px;font-weight:500}
+.config-desc{font-size:12px;color:var(--text-muted)}
+.config-input{width:120px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;text-align:center}
+.config-input:focus{border-color:var(--blue-500)}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:99px}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LOGIN
+══════════════════════════════════════ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-left">
+    <div class="login-brand">
+      <div class="logo">Pharma<span>Smart</span></div>
+      <div class="tagline">Sistema Inteligente de Gestão de Estoque</div>
+    </div>
+    <div class="login-pills">
+      <div class="login-pill">
+        <div class="login-pill-icon">
+          <svg width="15" height="15" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <div class="login-pill-text">Recomendações automáticas de compra baseadas em histórico de vendas</div>
+      </div>
+      <div class="login-pill">
+        <div class="login-pill-icon">
+          <svg width="15" height="15" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div class="login-pill-text">Alertas de risco de falta com margem de segurança configurável</div>
+      </div>
+      <div class="login-pill">
+        <div class="login-pill-icon">
+          <svg width="15" height="15" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="login-pill-text">Relatórios gerenciais e pedidos de compra ao fornecedor</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-form-wrap">
+      <div class="login-form-title">Bem-vindo de volta</div>
+      <div class="login-form-sub">Faça login para acessar o sistema</div>
+
+      <div class="form-group">
+        <label class="form-label">Perfil de acesso</label>
+        <select class="form-select" id="perfil-select">
+          <option value="farmaceutico">Farmacêutico</option>
+          <option value="gerente">Gerente</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input class="form-input" type="email" placeholder="seu@email.com" value="joao@pharma.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" type="password" placeholder="••••••••" value="12345678">
+      </div>
+      <button class="btn-login" onclick="doLogin()">Entrar no Sistema</button>
+      <div class="login-hint">Selecione o perfil para ver funcionalidades diferentes</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP
+══════════════════════════════════════ -->
+<div class="app" id="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">Pharma<span>Smart</span></div>
+      <div class="tagline">Gestão Inteligente de Estoque</div>
+    </div>
+    <nav class="nav-section">
+      <div class="nav-label">Principal</div>
+      <div class="nav-item active" onclick="navigate('dashboard',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="navigate('estoque',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Estoque / Produtos
+      </div>
+      <div class="nav-item" onclick="navigate('historico',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Histórico de Vendas
+      </div>
+      <div class="nav-item" onclick="navigate('sugestoes',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Sugestões de Compra
+        <span class="nav-badge">5</span>
+      </div>
+
+      <div class="nav-label">Operacional</div>
+      <div class="nav-item" onclick="navigate('pedidos',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        Pedidos de Compra
+      </div>
+      <div class="nav-item" onclick="navigate('fornecedores',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Fornecedores
+      </div>
+      <div class="nav-item" onclick="navigate('importar',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Importar CSV
+      </div>
+      <div class="nav-item" onclick="navigate('relatorios',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Relatórios
+      </div>
+
+      <div class="nav-label nav-gerente" style="display:none">Gerencial</div>
+      <div class="nav-item nav-gerente" style="display:none" onclick="navigate('configuracoes',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Parâmetros de Reposição
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar" id="user-avatar">JP</div>
+        <div>
+          <div class="user-name" id="user-name">João Paulo</div>
+          <div class="user-role" id="user-role">Farmacêutico</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sair do sistema
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-right">
+        <div class="search-bar">
+          <svg width="13" height="13" fill="none" stroke="#94A3B8" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Buscar produto...">
+        </div>
+        <div class="icon-btn" onclick="navigate('sugestoes', document.querySelectorAll('.nav-item')[3])">
+          <svg width="15" height="15" fill="none" stroke="#64748B" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="notif-dot"></div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('produto')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Cadastrar Produto
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ══ DASHBOARD ══ -->
+      <div class="page active" id="page-dashboard">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Total em Estoque</div>
+            <div class="kpi-value">4.312</div>
+            <div class="kpi-meta" style="color:var(--green);font-weight:600">▲ 8% este mês</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Risco de Falta</div>
+            <div class="kpi-value" style="color:var(--red)">6</div>
+            <div class="kpi-meta">Produtos abaixo do mínimo</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Sugestões Pendentes</div>
+            <div class="kpi-value" style="color:var(--blue-600)">5</div>
+            <div class="kpi-meta">Aguardando aprovação</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Pedidos em Aberto</div>
+            <div class="kpi-value" style="color:var(--amber)">3</div>
+            <div class="kpi-meta">Com fornecedores</div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-header">
+              <div><div class="card-title">Demanda Média Mensal por Categoria</div><div class="card-sub">Calculada nos últimos 90 dias</div></div>
+            </div>
+            <div class="chart-bars">
+              <div class="bar-col"><div class="bar" style="height:52px;background:var(--blue-500)"></div><div class="bar-label">Jan</div></div>
+              <div class="bar-col"><div class="bar" style="height:44px;background:var(--blue-500)"></div><div class="bar-label">Fev</div></div>
+              <div class="bar-col"><div class="bar" style="height:60px;background:var(--blue-500)"></div><div class="bar-label">Mar</div></div>
+              <div class="bar-col"><div class="bar" style="height:48px;background:var(--blue-400)"></div><div class="bar-label">Abr</div></div>
+              <div class="bar-col"><div class="bar" style="height:55px;background:var(--blue-400)"></div><div class="bar-label">Mai</div></div>
+              <div class="bar-col"><div class="bar" style="height:38px;background:var(--blue-300);opacity:.7"></div><div class="bar-label">Jun</div></div>
+            </div>
+            <div style="display:flex;gap:14px;padding:0 18px 16px">
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted)"><div style="width:9px;height:9px;border-radius:2px;background:var(--blue-500)"></div>Genérico</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted)"><div style="width:9px;height:9px;border-radius:2px;background:var(--blue-300);opacity:.7"></div>Similar</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted)"><div style="width:9px;height:9px;border-radius:2px;background:var(--amber)"></div>Marca</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Distribuição por Tipo</div></div>
+            <div style="padding:16px 18px">
+              <div style="margin-bottom:14px">
+                <div class="progress-header" style="padding:0;margin-bottom:6px"><span class="progress-label">Genérico</span><span class="progress-val">52% · 2.242 un.</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:52%;background:var(--blue-500)"></div></div>
+              </div>
+              <div style="margin-bottom:14px">
+                <div class="progress-header" style="padding:0;margin-bottom:6px"><span class="progress-label">Similar</span><span class="progress-val">30% · 1.294 un.</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:30%;background:var(--blue-300)"></div></div>
+              </div>
+              <div>
+                <div class="progress-header" style="padding:0;margin-bottom:6px"><span class="progress-label">Marca</span><span class="progress-val">18% · 776 un.</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:18%;background:var(--amber)"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div><div class="card-title">Alertas — Risco de Falta</div><div class="card-sub">Produtos com quantidade abaixo do mínimo</div></div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:5px 9px" onclick="navigate('sugestoes',document.querySelectorAll('.nav-item')[3])">Ver sugestões</button>
+            </div>
+            <div class="alert-item">
+              <div class="alert-icon" style="background:var(--red-light)">
+                <svg width="13" height="13" fill="none" stroke="var(--red)" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+              </div>
+              <div style="flex:1">
+                <div class="alert-name">Dipirona 500mg <span class="chip chip-blue" style="margin-left:6px">Genérico</span></div>
+                <div class="alert-desc">Qtd. atual: 3 · Mínima: 50 · Demanda média: 28/mês</div>
+              </div>
+              <button class="btn btn-primary" style="font-size:11px;padding:5px 9px" onclick="showToast('Sugestão de compra gerada!')">Gerar sugestão</button>
+            </div>
+            <div class="alert-item">
+              <div class="alert-icon" style="background:var(--red-light)">
+                <svg width="13" height="13" fill="none" stroke="var(--red)" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+              </div>
+              <div style="flex:1">
+                <div class="alert-name">Amoxicilina 500mg <span class="chip chip-green" style="margin-left:6px">Similar</span></div>
+                <div class="alert-desc">Qtd. atual: 5 · Mínima: 30 · Demanda média: 22/mês</div>
+              </div>
+              <button class="btn btn-primary" style="font-size:11px;padding:5px 9px" onclick="showToast('Sugestão de compra gerada!')">Gerar sugestão</button>
+            </div>
+            <div class="alert-item">
+              <div class="alert-icon" style="background:var(--amber-light)">
+                <svg width="13" height="13" fill="none" stroke="var(--amber)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+              </div>
+              <div style="flex:1">
+                <div class="alert-name">Losartana 50mg <span class="chip chip-blue" style="margin-left:6px">Genérico</span></div>
+                <div class="alert-desc">Qtd. atual: 18 · Mínima: 50 · Demanda média: 31/mês</div>
+              </div>
+              <button class="btn btn-ghost" style="font-size:11px;padding:5px 9px">Verificar</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div><div class="card-title">Top Sugestões — Cálculo de Reposição</div></div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:5px 9px" onclick="navigate('sugestoes',document.querySelectorAll('.nav-item')[3])">Ver todas</button>
+            </div>
+            <div class="rec-item">
+              <div class="rec-rank">01</div>
+              <div class="rec-info">
+                <div class="rec-name">Dipirona 500mg</div>
+                <div class="rec-meta">Genérico · Demanda média: 28/mês · Margem: 20%</div>
+              </div>
+              <div><div class="rec-qty-val">120</div><div class="rec-qty-label">unid. recomendadas</div></div>
+            </div>
+            <div class="rec-item">
+              <div class="rec-rank">02</div>
+              <div class="rec-info">
+                <div class="rec-name">Losartana 50mg</div>
+                <div class="rec-meta">Genérico · Demanda média: 31/mês · Margem: 20%</div>
+              </div>
+              <div><div class="rec-qty-val">90</div><div class="rec-qty-label">unid. recomendadas</div></div>
+            </div>
+            <div class="rec-item">
+              <div class="rec-rank">03</div>
+              <div class="rec-info">
+                <div class="rec-name">Ibuprofeno 600mg</div>
+                <div class="rec-meta">Similar · Demanda média: 19/mês · Margem: 20%</div>
+              </div>
+              <div><div class="rec-qty-val">60</div><div class="rec-qty-label">unid. recomendadas</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ ESTOQUE / PRODUTOS ══ -->
+      <div class="page" id="page-estoque">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <div class="tabs">
+            <div class="tab active" onclick="setTab(this)">Todos</div>
+            <div class="tab" onclick="setTab(this)">Genérico</div>
+            <div class="tab" onclick="setTab(this)">Similar</div>
+            <div class="tab" onclick="setTab(this)">Marca</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <div class="search-bar"><svg width="13" height="13" fill="none" stroke="#94A3B8" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input placeholder="Buscar produto..."></div>
+            <button class="btn btn-ghost">Filtrar</button>
+          </div>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr>
+              <th>Produto</th><th>Princípio Ativo</th><th>Tipo</th><th>Categoria</th>
+              <th>Qtd. Atual</th><th>Qtd. Mínima</th><th>Preço Unit.</th><th>Fornecedor</th><th>Status</th><th></th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><div style="font-weight:500">Dipirona 500mg</div><div style="font-size:11px;color:var(--text-muted)">EMS Sigma Pharma</div></td>
+                <td style="font-size:12px;color:var(--text-muted)">Dipirona Sódica</td>
+                <td><span class="chip chip-blue">Genérico</span></td>
+                <td style="font-size:12px">Analgésico</td>
+                <td><strong style="color:var(--red)">3</strong></td>
+                <td>50</td>
+                <td>R$ 4,80</td>
+                <td style="font-size:12px">EMS Distribuidora</td>
+                <td><span class="status-dot"><span class="dot dot-red"></span>Risco de falta</span></td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Produto aberto para edição')">Editar</button></td>
+              </tr>
+              <tr>
+                <td><div style="font-weight:500">Amoxicilina 500mg</div><div style="font-size:11px;color:var(--text-muted)">Medley</div></td>
+                <td style="font-size:12px;color:var(--text-muted)">Amoxicilina</td>
+                <td><span class="chip chip-green">Similar</span></td>
+                <td style="font-size:12px">Antibiótico</td>
+                <td><strong style="color:var(--red)">5</strong></td>
+                <td>30</td>
+                <td>R$ 22,00</td>
+                <td style="font-size:12px">Medley</td>
+                <td><span class="status-dot"><span class="dot dot-red"></span>Risco de falta</span></td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Produto aberto para edição')">Editar</button></td>
+              </tr>
+              <tr>
+                <td><div style="font-weight:500">Losartana 50mg</div><div style="font-size:11px;color:var(--text-muted)">Sandoz</div></td>
+                <td style="font-size:12px;color:var(--text-muted)">Losartana Potássica</td>
+                <td><span class="chip chip-blue">Genérico</span></td>
+                <td style="font-size:12px">Anti-hipertensivo</td>
+                <td><strong style="color:var(--amber)">18</strong></td>
+                <td>50</td>
+                <td>R$ 12,50</td>
+                <td style="font-size:12px">Sandoz</td>
+                <td><span class="status-dot"><span class="dot dot-amber"></span>Estoque baixo</span></td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Produto aberto para edição')">Editar</button></td>
+              </tr>
+              <tr>
+                <td><div style="font-weight:500">Omeprazol 20mg</div><div style="font-size:11px;color:var(--text-muted)">Neo Química</div></td>
+                <td style="font-size:12px;color:var(--text-muted)">Omeprazol</td>
+                <td><span class="chip chip-blue">Genérico</span></td>
+                <td style="font-size:12px">Gastroprotetor</td>
+                <td>42</td>
+                <td>40</td>
+                <td>R$ 9,20</td>
+                <td style="font-size:12px">Neo Química</td>
+                <td><span class="status-dot"><span class="dot dot-green"></span>Normal</span></td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Produto aberto para edição')">Editar</button></td>
+              </tr>
+              <tr>
+                <td><div style="font-weight:500">Atenolol 50mg</div><div style="font-size:11px;color:var(--text-muted)">Aché</div></td>
+                <td style="font-size:12px;color:var(--text-muted)">Atenolol</td>
+                <td><span class="chip chip-amber">Marca</span></td>
+                <td style="font-size:12px">Anti-hipertensivo</td>
+                <td>134</td>
+                <td>30</td>
+                <td>R$ 18,90</td>
+                <td style="font-size:12px">Aché</td>
+                <td><span class="status-dot"><span class="dot dot-green"></span>Normal</span></td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Produto aberto para edição')">Editar</button></td>
+              </tr>
+              <tr>
+                <td><div style="font-weight:500">Metformina 850mg</div><div style="font-size:11px;color:var(--text-muted)">Eurofarma</div></td>
+                <td style="font-size:12px;color:var(--text-muted)">Cloridrato de Metformina</td>
+                <td><span class="chip chip-blue">Genérico</span></td>
+                <td style="font-size:12px">Antidiabético</td>
+                <td>89</td>
+                <td>60</td>
+                <td>R$ 11,30</td>
+                <td style="font-size:12px">Eurofarma</td>
+                <td><span class="status-dot"><span class="dot dot-green"></span>Normal</span></td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Produto aberto para edição')">Editar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ HISTÓRICO DE VENDAS ══ -->
+      <div class="page" id="page-historico">
+        <div style="display:flex;gap:8px;margin-bottom:18px;align-items:center">
+          <button class="btn btn-primary">Abr/2025</button>
+          <button class="btn btn-ghost">Mar/2025</button>
+          <button class="btn btn-ghost">Fev/2025</button>
+          <button class="btn btn-ghost">Ver todos</button>
+          <button class="btn btn-ghost" style="margin-left:auto" onclick="navigate('importar',document.querySelectorAll('.nav-item')[6])">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Importar CSV
+          </button>
+        </div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
+          <div class="kpi-card"><div class="kpi-label">Total Vendido — Abr/2025</div><div class="kpi-value">2.341</div><div class="kpi-meta" style="color:var(--blue-600);font-weight:600">unidades</div></div>
+          <div class="kpi-card"><div class="kpi-label">Período de Análise</div><div class="kpi-value">3</div><div class="kpi-meta">meses (configurável)</div></div>
+          <div class="kpi-card"><div class="kpi-label">Produtos no Histórico</div><div class="kpi-value">48</div><div class="kpi-meta">produtos distintos</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Histórico de Vendas — Abr/2025</div><div class="card-sub">id_historico · mes_referencia · ano_referencia · quantidade_vendida</div></div>
+          </div>
+          <table>
+            <thead><tr><th>ID</th><th>Produto</th><th>Tipo</th><th>Mês Ref.</th><th>Ano Ref.</th><th>Qtd. Vendida</th><th>Demanda Média Calc.</th></tr></thead>
+            <tbody>
+              <tr><td style="color:var(--text-muted);font-size:12px">#001</td><td style="font-weight:500">Dipirona 500mg</td><td><span class="chip chip-blue">Genérico</span></td><td>4</td><td>2025</td><td><strong>84</strong></td><td style="color:var(--blue-600);font-weight:600">28,0 / mês</td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">#002</td><td style="font-weight:500">Losartana 50mg</td><td><span class="chip chip-blue">Genérico</span></td><td>4</td><td>2025</td><td><strong>93</strong></td><td style="color:var(--blue-600);font-weight:600">31,0 / mês</td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">#003</td><td style="font-weight:500">Metformina 850mg</td><td><span class="chip chip-blue">Genérico</span></td><td>4</td><td>2025</td><td><strong>70</strong></td><td style="color:var(--blue-600);font-weight:600">23,3 / mês</td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">#004</td><td style="font-weight:500">Amoxicilina 500mg</td><td><span class="chip chip-green">Similar</span></td><td>4</td><td>2025</td><td><strong>66</strong></td><td style="color:var(--blue-600);font-weight:600">22,0 / mês</td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">#005</td><td style="font-weight:500">Ibuprofeno 600mg</td><td><span class="chip chip-green">Similar</span></td><td>4</td><td>2025</td><td><strong>57</strong></td><td style="color:var(--blue-600);font-weight:600">19,0 / mês</td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">#006</td><td style="font-weight:500">Omeprazol 20mg</td><td><span class="chip chip-blue">Genérico</span></td><td>4</td><td>2025</td><td><strong>51</strong></td><td style="color:var(--blue-600);font-weight:600">17,0 / mês</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ SUGESTÕES DE COMPRA ══ -->
+      <div class="page" id="page-sugestoes">
+        <div class="banner">
+          <div>
+            <div class="banner-title">Cálculo de Reposição Automático</div>
+            <div class="banner-sub">Demanda média × período de análise + margem de segurança configurada (20%)</div>
+          </div>
+          <button class="btn" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2)" onclick="showToast('Todas as sugestões aprovadas e pedidos gerados!')">Aprovar Todas (5)</button>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Produto</th><th>Tipo</th>
+              <th>Qtd. Atual</th><th>Qtd. Mínima</th><th>Demanda Média</th>
+              <th>Margem Seg.</th><th>Qtd. Recomendada</th><th>Status</th><th>Ação</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td style="font-family:'Syne',sans-serif;font-weight:700;color:#CBD5E1">01</td>
+                <td><div style="font-weight:500">Dipirona 500mg</div><div style="font-size:11px;color:var(--text-muted)">EMS · Genérico</div></td>
+                <td><span class="chip chip-blue">Genérico</span></td>
+                <td><strong style="color:var(--red)">3</strong></td>
+                <td>50</td>
+                <td>28,0 / mês</td>
+                <td>20%</td>
+                <td><strong style="color:var(--blue-600);font-size:15px">120</strong></td>
+                <td><span class="status-dot"><span class="dot dot-amber"></span>Pendente</span></td>
+                <td><div style="display:flex;gap:5px">
+                  <button class="btn btn-primary" style="font-size:11px;padding:4px 8px" onclick="showToast('Sugestão #01 aprovada!')">Aprovar</button>
+                  <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px">Rejeitar</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Syne',sans-serif;font-weight:700;color:#CBD5E1">02</td>
+                <td><div style="font-weight:500">Losartana 50mg</div><div style="font-size:11px;color:var(--text-muted)">Sandoz · Genérico</div></td>
+                <td><span class="chip chip-blue">Genérico</span></td>
+                <td><strong style="color:var(--amber)">18</strong></td>
+                <td>50</td>
+                <td>31,0 / mês</td>
+                <td>20%</td>
+                <td><strong style="color:var(--blue-600);font-size:15px">90</strong></td>
+                <td><span class="status-dot"><span class="dot dot-amber"></span>Pendente</span></td>
+                <td><div style="display:flex;gap:5px">
+                  <button class="btn btn-primary" style="font-size:11px;padding:4px 8px" onclick="showToast('Sugestão #02 aprovada!')">Aprovar</button>
+                  <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px">Rejeitar</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Syne',sans-serif;font-weight:700;color:#CBD5E1">03</td>
+                <td><div style="font-weight:500">Amoxicilina 500mg</div><div style="font-size:11px;color:var(--text-muted)">Medley · Similar</div></td>
+                <td><span class="chip chip-green">Similar</span></td>
+                <td><strong style="color:var(--red)">5</strong></td>
+                <td>30</td>
+                <td>22,0 / mês</td>
+                <td>20%</td>
+                <td><strong style="color:var(--blue-600);font-size:15px">75</strong></td>
+                <td><span class="status-dot"><span class="dot dot-amber"></span>Pendente</span></td>
+                <td><div style="display:flex;gap:5px">
+                  <button class="btn btn-primary" style="font-size:11px;padding:4px 8px" onclick="showToast('Sugestão #03 aprovada!')">Aprovar</button>
+                  <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px">Rejeitar</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Syne',sans-serif;font-weight:700;color:#CBD5E1">04</td>
+                <td><div style="font-weight:500">Ibuprofeno 600mg</div><div style="font-size:11px;color:var(--text-muted)">Farmasa · Similar</div></td>
+                <td><span class="chip chip-green">Similar</span></td>
+                <td><strong style="color:var(--amber)">12</strong></td>
+                <td>40</td>
+                <td>19,0 / mês</td>
+                <td>20%</td>
+                <td><strong style="color:var(--blue-600);font-size:15px">60</strong></td>
+                <td><span class="status-dot"><span class="dot dot-green"></span>Aprovada</span></td>
+                <td><div style="display:flex;gap:5px">
+                  <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Pedido de compra gerado!')">Gerar pedido</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Syne',sans-serif;font-weight:700;color:#CBD5E1">05</td>
+                <td><div style="font-weight:500">Metformina 850mg</div><div style="font-size:11px;color:var(--text-muted)">Eurofarma · Genérico</div></td>
+                <td><span class="chip chip-blue">Genérico</span></td>
+                <td>40</td>
+                <td>60</td>
+                <td>23,3 / mês</td>
+                <td>20%</td>
+                <td><strong style="color:var(--blue-600);font-size:15px">65</strong></td>
+                <td><span class="status-dot"><span class="dot dot-amber"></span>Pendente</span></td>
+                <td><div style="display:flex;gap:5px">
+                  <button class="btn btn-primary" style="font-size:11px;padding:4px 8px" onclick="showToast('Sugestão #05 aprovada!')">Aprovar</button>
+                  <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px">Rejeitar</button>
+                </div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ PEDIDOS DE COMPRA ══ -->
+      <div class="page" id="page-pedidos">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Pedidos de Compra ao Fornecedor</div><div class="card-sub">id_pedido · data_pedido · status · valor_total</div></div>
+            <button class="btn btn-primary" onclick="showToast('Novo pedido de compra criado!')">Novo Pedido Manual</button>
+          </div>
+          <table>
+            <thead><tr><th>ID Pedido</th><th>Fornecedor</th><th>Data Pedido</th><th>Itens</th><th>Valor Total</th><th>Status</th><th>Previsão Entrega</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:600;color:var(--blue-600)">#PED-001</td>
+                <td>EMS Distribuidora</td>
+                <td>28/04/2025</td>
+                <td>3 itens</td>
+                <td style="font-weight:600">R$ 1.240,00</td>
+                <td><span class="status-dot"><span class="dot dot-amber"></span>Aguardando</span></td>
+                <td style="color:var(--text-muted);font-size:12px">02/05/2025</td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Pedido #PED-001 visualizado')">Ver itens</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600;color:var(--blue-600)">#PED-002</td>
+                <td>Medley Farmacêutica</td>
+                <td>25/04/2025</td>
+                <td>2 itens</td>
+                <td style="font-weight:600">R$ 880,00</td>
+                <td><span class="status-dot"><span class="dot dot-blue"></span>Confirmado</span></td>
+                <td style="color:var(--text-muted);font-size:12px">30/04/2025</td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Pedido #PED-002 visualizado')">Ver itens</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600;color:var(--blue-600)">#PED-003</td>
+                <td>Sandoz Brasil</td>
+                <td>20/04/2025</td>
+                <td>4 itens</td>
+                <td style="font-weight:600">R$ 2.100,00</td>
+                <td><span class="status-dot"><span class="dot dot-green"></span>Entregue</span></td>
+                <td style="color:var(--text-muted);font-size:12px">26/04/2025</td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Pedido #PED-003 visualizado')">Ver itens</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ FORNECEDORES ══ -->
+      <div class="page" id="page-fornecedores">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
+          <button class="btn btn-primary" onclick="showToast('Formulário de fornecedor aberto')">Cadastrar Fornecedor</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Fornecedor</th><th>CNPJ</th><th>Telefone</th><th>E-mail</th><th>Prazo Entrega</th><th>Disponibilidade</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:500">EMS Sigma Pharma</td>
+                <td style="font-size:12px;color:var(--text-muted)">04.561.020/0001-02</td>
+                <td style="font-size:12px">(11) 3030-3000</td>
+                <td style="font-size:12px;color:var(--text-muted)">vendas@ems.com.br</td>
+                <td>3 dias úteis</td>
+                <td><span class="status-dot"><span class="dot dot-green"></span>Disponível</span></td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Fornecedor EMS aberto')">Editar</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500">Medley Farmacêutica</td>
+                <td style="font-size:12px;color:var(--text-muted)">47.220.699/0001-10</td>
+                <td style="font-size:12px">(11) 4198-9000</td>
+                <td style="font-size:12px;color:var(--text-muted)">pedidos@medley.com</td>
+                <td>5 dias úteis</td>
+                <td><span class="status-dot"><span class="dot dot-green"></span>Disponível</span></td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Fornecedor Medley aberto')">Editar</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500">Sandoz Brasil</td>
+                <td style="font-size:12px;color:var(--text-muted)">56.994.502/0001-30</td>
+                <td style="font-size:12px">(11) 5047-9900</td>
+                <td style="font-size:12px;color:var(--text-muted)">comercial@sandoz.com</td>
+                <td>4 dias úteis</td>
+                <td><span class="status-dot"><span class="dot dot-amber"></span>Verificar</span></td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Fornecedor Sandoz aberto')">Editar</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500">Aché Laboratórios</td>
+                <td style="font-size:12px;color:var(--text-muted)">60.659.463/0001-91</td>
+                <td style="font-size:12px">(11) 4636-3600</td>
+                <td style="font-size:12px;color:var(--text-muted)">ache@ache.com.br</td>
+                <td>7 dias úteis</td>
+                <td><span class="status-dot"><span class="dot dot-green"></span>Disponível</span></td>
+                <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="showToast('Fornecedor Aché aberto')">Editar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ IMPORTAR CSV ══ -->
+      <div class="page" id="page-importar">
+        <div class="grid-2" style="margin-bottom:20px">
+          <div class="dropzone" onclick="showToast('Arquivo vendas_abril_2025.csv selecionado!')">
+            <div style="font-size:38px;margin-bottom:12px">📂</div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:6px">Arraste o arquivo CSV aqui</div>
+            <div style="font-size:13px;color:var(--text-muted)">ou clique para selecionar · historico_vendas.csv</div>
+            <button class="btn btn-primary" style="margin-top:16px">Selecionar Arquivo</button>
+          </div>
+          <div class="card" style="height:fit-content">
+            <div class="card-header"><div class="card-title">Estrutura esperada do CSV</div></div>
+            <div style="padding:14px 18px">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Colunas obrigatórias (histórico_venda):</div>
+              <div style="font-family:monospace;font-size:12px;background:#F8FAFF;border-radius:8px;padding:12px;border:1px solid var(--border);color:var(--text);line-height:1.8">
+                id_produto,<br>
+                mes_referencia,<br>
+                ano_referencia,<br>
+                quantidade_vendida
+              </div>
+              <a href="#" style="font-size:12px;color:var(--blue-600);text-decoration:none;font-weight:600;margin-top:12px;display:block" onclick="showToast('Baixando modelo CSV...')">⬇ Baixar modelo CSV</a>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Último Arquivo Importado</div><div class="card-sub">historico_vendas_abr2025.csv · há 2 dias · <span style="color:var(--green);font-weight:600">✓ Validado e processado</span></div></div></div>
+          <table>
+            <thead><tr><th>id_produto</th><th>Produto</th><th>mes_referencia</th><th>ano_referencia</th><th>qtd_vendida</th><th>Validação</th></tr></thead>
+            <tbody>
+              <tr><td style="font-size:12px;color:var(--text-muted)">1</td><td style="font-weight:500">Dipirona 500mg</td><td>4</td><td>2025</td><td><strong>84</strong></td><td><span class="status-dot"><span class="dot dot-green"></span>OK</span></td></tr>
+              <tr><td style="font-size:12px;color:var(--text-muted)">2</td><td style="font-weight:500">Losartana 50mg</td><td>4</td><td>2025</td><td><strong>93</strong></td><td><span class="status-dot"><span class="dot dot-green"></span>OK</span></td></tr>
+              <tr><td style="font-size:12px;color:var(--text-muted)">3</td><td style="font-weight:500">Metformina 850mg</td><td>4</td><td>2025</td><td><strong>70</strong></td><td><span class="status-dot"><span class="dot dot-green"></span>OK</span></td></tr>
+              <tr><td style="font-size:12px;color:var(--text-muted)">4</td><td style="font-weight:500">Amoxicilina 500mg</td><td>4</td><td>2025</td><td><strong>66</strong></td><td><span class="status-dot"><span class="dot dot-green"></span>OK</span></td></tr>
+              <tr><td style="font-size:12px;color:var(--text-muted)">9</td><td style="font-weight:500">Produto ID inválido</td><td>4</td><td>2025</td><td>—</td><td><span class="status-dot"><span class="dot dot-red"></span>Erro: produto não cadastrado</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ RELATÓRIOS ══ -->
+      <div class="page" id="page-relatorios">
+        <div style="display:flex;gap:8px;margin-bottom:20px;align-items:center">
+          <button class="btn btn-primary">Abr/2025</button>
+          <button class="btn btn-ghost">Últimos 3 meses</button>
+          <button class="btn btn-ghost">Período personalizado</button>
+          <button class="btn btn-ghost" style="margin-left:auto" onclick="showToast('Relatório exportado como PDF!')">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar PDF
+          </button>
+        </div>
+        <div class="kpi-grid" style="margin-bottom:20px">
+          <div class="kpi-card"><div class="kpi-label">Total Vendido</div><div class="kpi-value">2.341</div><div class="kpi-meta" style="color:var(--blue-600);font-weight:600">▲ 8% vs mês ant.</div></div>
+          <div class="kpi-card"><div class="kpi-label">Precisão Recomendações</div><div class="kpi-value" style="color:var(--green)">91%</div><div class="kpi-meta">Sugestões aceitas pelo gerente</div></div>
+          <div class="kpi-card"><div class="kpi-label">Pedidos Gerados</div><div class="kpi-value">12</div><div class="kpi-meta">Pedidos ao fornecedor</div></div>
+          <div class="kpi-card"><div class="kpi-label">Alertas de Falta</div><div class="kpi-value" style="color:var(--red)">6</div><div class="kpi-meta">Produtos com risco de falta</div></div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Relatório de Reposição</div><div style="font-size:11px;color:var(--text-muted)">data_geracao · periodo_referencia</div></div>
+            <div style="padding:8px 0">
+              <div class="progress-item"><div class="progress-header"><span class="progress-label">Dipirona 500mg</span><span class="progress-val">487 un. · Reposição: 120</span></div><div class="progress-bar"><div class="progress-fill" style="width:92%;background:var(--blue-500)"></div></div></div>
+              <div class="progress-item"><div class="progress-header"><span class="progress-label">Losartana 50mg</span><span class="progress-val">312 un. · Reposição: 90</span></div><div class="progress-bar"><div class="progress-fill" style="width:65%;background:var(--blue-500)"></div></div></div>
+              <div class="progress-item"><div class="progress-header"><span class="progress-label">Metformina 850mg</span><span class="progress-val">280 un. · Reposição: 65</span></div><div class="progress-bar"><div class="progress-fill" style="width:56%;background:var(--blue-400)"></div></div></div>
+              <div class="progress-item"><div class="progress-header"><span class="progress-label">Amoxicilina 500mg</span><span class="progress-val">241 un. · Reposição: 75</span></div><div class="progress-bar"><div class="progress-fill" style="width:48%;background:var(--blue-400)"></div></div></div>
+              <div class="progress-item"><div class="progress-header"><span class="progress-label">Ibuprofeno 600mg</span><span class="progress-val">198 un. · Reposição: 60</span></div><div class="progress-bar"><div class="progress-fill" style="width:40%;background:var(--amber)"></div></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Distribuição por Tipo</div></div>
+            <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;align-items:center;gap:12px"><div style="width:9px;height:9px;border-radius:50%;background:var(--blue-500)"></div><div style="flex:1;font-size:13px;font-weight:500">Genérico</div><div style="font-size:12px;color:var(--text-muted)">1.124 un.</div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700">52%</div></div>
+              <div style="display:flex;align-items:center;gap:12px"><div style="width:9px;height:9px;border-radius:50%;background:var(--blue-300)"></div><div style="flex:1;font-size:13px;font-weight:500">Similar</div><div style="font-size:12px;color:var(--text-muted)">703 un.</div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700">30%</div></div>
+              <div style="display:flex;align-items:center;gap:12px"><div style="width:9px;height:9px;border-radius:50%;background:var(--amber)"></div><div style="flex:1;font-size:13px;font-weight:500">Marca</div><div style="font-size:12px;color:var(--text-muted)">514 un.</div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700">18%</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PARÂMETROS (GERENTE) ══ -->
+      <div class="page" id="page-configuracoes">
+        <div class="card" style="max-width:680px">
+          <div class="card-header"><div><div class="card-title">Parâmetros de Reposição</div><div class="card-sub">parametro_reposicao — configurações globais do cálculo automático</div></div></div>
+          <div style="padding:20px 22px">
+            <div class="config-section">
+              <div class="config-section-title">Cálculo de Reposição</div>
+              <div class="config-row">
+                <div><div class="config-label">Margem de Segurança (%)</div><div class="config-desc">Percentual adicional aplicado à quantidade recomendada (margem_seguranca)</div></div>
+                <input class="config-input" type="number" value="20" min="0" max="100">
+              </div>
+              <div class="config-row">
+                <div><div class="config-label">Período de Análise (meses)</div><div class="config-desc">Quantos meses de histórico considerar para calcular a demanda média (periodo_analise_meses)</div></div>
+                <input class="config-input" type="number" value="3" min="1" max="12">
+              </div>
+              <div class="config-row">
+                <div><div class="config-label">Estoque Mínimo Padrão</div><div class="config-desc">Valor padrão para produtos sem estoque mínimo definido (estoque_minimo_padrao)</div></div>
+                <input class="config-input" type="number" value="30" min="1">
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;padding-top:8px">
+              <button class="btn btn-ghost">Restaurar padrão</button>
+              <button class="btn btn-primary" onclick="showToast('Parâmetros salvos com sucesso!')">Salvar Parâmetros</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══ MODAL CADASTRAR PRODUTO ══ -->
+<div class="modal-overlay" id="modal-produto">
+  <div class="modal">
+    <div class="modal-title">Cadastrar Produto</div>
+    <div class="modal-sub">Novo medicamento no sistema · entidade <strong>produto</strong></div>
+    <div class="form-group"><label class="form-label">Nome do Produto</label><input class="form-input" placeholder="Ex: Dipirona 500mg"></div>
+    <div class="form-group"><label class="form-label">Princípio Ativo</label><input class="form-input" placeholder="Ex: Dipirona Sódica"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Categoria (tipo)</label>
+        <select class="form-select"><option>Genérico</option><option>Similar</option><option>Marca</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Categoria Terapêutica</label>
+        <input class="form-input" placeholder="Ex: Analgésico">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Preço Unitário (R$)</label><input class="form-input" type="number" placeholder="0,00"></div>
+      <div class="form-group"><label class="form-label">Fornecedor</label>
+        <select class="form-select"><option>EMS Sigma Pharma</option><option>Medley</option><option>Sandoz</option><option>Aché</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Qtd. Atual (estoque)</label><input class="form-input" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Qtd. Mínima (estoque)</label><input class="form-input" type="number" placeholder="30"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('produto')">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal('produto');showToast('Produto cadastrado com sucesso!')">Salvar Produto</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div>
+
+<script>
+const titles={dashboard:'Dashboard',estoque:'Estoque / Produtos',historico:'Histórico de Vendas',sugestoes:'Sugestões de Compra',pedidos:'Pedidos de Compra',fornecedores:'Fornecedores',importar:'Importar CSV',relatorios:'Relatórios',configuracoes:'Parâmetros de Reposição'};
+
+function doLogin(){
+  const perfil=document.getElementById('perfil-select').value;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('visible');
+  if(perfil==='gerente'){
+    document.getElementById('user-name').textContent='Carlos Gerente';
+    document.getElementById('user-role').textContent='Gerente';
+    document.getElementById('user-avatar').textContent='CG';
+    document.querySelectorAll('.nav-gerente').forEach(el=>el.style.display='flex');
+    document.querySelectorAll('.nav-gerente[class*="label"]').forEach(el=>el.style.display='block');
+  } else {
+    document.getElementById('user-name').textContent='João Paulo';
+    document.getElementById('user-role').textContent='Farmacêutico';
+    document.getElementById('user-avatar').textContent='JP';
+  }
+}
+
+function doLogout(){
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-screen').style.display='flex';
+}
+
+function navigate(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el)el.classList.add('active');
+  document.getElementById('page-title').textContent=titles[page];
+  document.querySelector('.content').scrollTop=0;
+}
+
+function setTab(el){
+  el.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function openModal(id){document.getElementById('modal-'+id).classList.add('open')}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open')}
+
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')});
+});
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>

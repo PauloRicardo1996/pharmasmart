@@ -1,0 +1,3 @@
+produto,documento,data,quantidade,total,total_bruto,desconto,vendedor,caixa,grupo,sub_grupo
+1001,V-1,16/08/2026,3,30,32,2,Ana,1,MEDICAMENTOS,GENERICO
+1002,V-2,21/08/2026,1,5,5,0,Beto,1,MEDICAMENTOS,SIMILAR

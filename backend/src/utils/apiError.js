@@ -15,3 +15,7 @@ export function conflict(code, message) {
   return new ApiError(409, code, message);
 }
 
+export function badRequest(code, message, details) {
+  return new ApiError(400, code, message, details);
+}
+

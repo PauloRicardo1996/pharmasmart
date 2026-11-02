@@ -5,12 +5,14 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 enum TipoMedicamento {
   GENERICO
   SIMILAR
   MARCA
+  NAO_CLASSIFICADO
 }
 
 enum StatusSugestao {
@@ -19,136 +21,360 @@ enum StatusSugestao {
   REJEITADA
 }
 
+enum RiscoReposicao {
+  CRITICO
+  ALTO
+  MEDIO
+  BAIXO
+  SEM_DEMANDA
+  DADO_ANOMALO
+}
+
+enum ConfiancaReposicao {
+  BAIXA
+  MEDIA
+  ALTA
+}
+
+enum PerfilUsuario {
+  FARMACEUTICO
+  GERENTE
+}
+
+enum AcaoAuditoria {
+  LOGIN
+  LOGOUT
+  CRIAR
+  ALTERAR
+  DESATIVAR
+  IMPORTAR
+  GERAR
+  ALTERAR_STATUS
+}
+
+enum RecursoAuditoria {
+  AUTENTICACAO
+  USUARIO
+  PRODUTO
+  ESTOQUE
+  FORNECEDOR
+  IMPORTACAO
+  CONFIGURACAO_REPOSICAO
+  PEDIDO_COMPRA
+  REPOSICAO
+}
+
 enum StatusPedido {
+  PENDENTE
+  PEDIDO
+  RECEBIDO
+  CANCELADO
   ABERTO
   ENVIADO
   CONFIRMADO
   ENTREGUE
-  CANCELADO
+}
+
+model Usuario {
+  id         Int           @id @default(autoincrement()) @map("id_usuario")
+  nome       String
+  login      String        @unique
+  senhaHash  String        @map("senha_hash")
+  perfil     PerfilUsuario @default(FARMACEUTICO)
+  ativo      Boolean       @default(true)
+  criadoEm   DateTime      @default(now()) @map("criado_em")
+  atualizadoEm DateTime    @updatedAt @map("atualizado_em")
+  auditorias  Auditoria[]
+
+  @@map("usuario")
+}
+
+model Auditoria {
+  id        Int              @id @default(autoincrement()) @map("id_auditoria")
+  usuarioId Int              @map("id_usuario")
+  acao      AcaoAuditoria
+  recurso   RecursoAuditoria
+  recursoId Int?             @map("id_recurso")
+  descricao String
+  dados     Json?
+  ip        String?
+  userAgent String?          @map("user_agent")
+  criadoEm  DateTime         @default(now()) @map("criado_em")
+  usuario   Usuario          @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
+  @@index([criadoEm])
+  @@index([recurso])
+  @@index([acao])
+  @@map("auditoria")
 }
 
 model Produto {
-  id                 Int                 @id @default(autoincrement()) @map("id_produto")
-  nome               String
-  principioAtivo     String              @map("principio_ativo")
-  categoria          String
-  tipo               TipoMedicamento
-  precoUnitario      Decimal             @map("preco_unitario") @db.Decimal(10, 2)
-  estoque            Estoque?
-  historicoVendas    HistoricoVenda[]
-  calculos           CalculoReposicao[]
-  sugestoes          SugestaoCompra[]
-  itensPedido        ItemPedidoCompra[]
-  criadoEm           DateTime            @default(now()) @map("criado_em")
+  id               Int                  @id @default(autoincrement()) @map("id_produto")
+  codigoExterno    String               @unique @map("codigo_externo")
+  nome             String
+  principioAtivo   String               @map("principio_ativo")
+  categoria        String
+  tipo             TipoMedicamento
+  precoUnitario    Decimal              @map("preco_unitario") @db.Decimal(10, 2)
+  grupo            String?
+  subGrupo         String?              @map("sub_grupo")
+  estoque          Estoque?
+  codigosBarras    ProdutoCodigoBarra[]
+  estoqueSnapshots EstoqueSnapshot[]
+  historicoVendas  HistoricoVenda[]
+  entradasMensais  EntradaMensal[]
+  itensVenda       ItemVenda[]
+  itensEntrada     ItemEntradaCompra[]
+  calculos         CalculoReposicao[]
+  sugestoes        SugestaoCompra[]
+  itensPedido      ItemPedidoCompra[]
+  criadoEm         DateTime             @default(now()) @map("criado_em")
+
   @@map("produto")
 }
 
 model Estoque {
-  id                 Int      @id @default(autoincrement()) @map("id_estoque")
-  produtoId          Int      @unique @map("id_produto")
-  quantidadeAtual    Int      @map("quantidade_atual")
-  quantidadeMinima   Int      @map("quantidade_minima")
-  dataAtualizacao    DateTime @updatedAt @map("data_atualizacao")
-  produto            Produto  @relation(fields: [produtoId], references: [id])
+  id               Int      @id @default(autoincrement()) @map("id_estoque")
+  produtoId        Int      @unique @map("id_produto")
+  quantidadeAtual  Decimal  @map("quantidade_atual") @db.Decimal(20, 3)
+  quantidadeMinima Int      @map("quantidade_minima")
+  dataAtualizacao  DateTime @updatedAt @map("data_atualizacao")
+  produto          Produto  @relation(fields: [produtoId], references: [id])
+
   @@map("estoque")
 }
 
+model ProdutoCodigoBarra {
+  id          Int     @id @default(autoincrement()) @map("id_produto_codigo_barra")
+  produtoId   Int     @map("id_produto")
+  codigoBarra String  @map("codigo_barra")
+  produto     Produto @relation(fields: [produtoId], references: [id])
+
+  @@unique([produtoId, codigoBarra])
+  @@index([codigoBarra])
+  @@map("produto_codigo_barra")
+}
+
+model EstoqueSnapshot {
+  id             Int      @id @default(autoincrement()) @map("id_estoque_snapshot")
+  produtoId      Int      @map("id_produto")
+  dataReferencia DateTime @map("data_referencia")
+  quantidade     Decimal  @db.Decimal(20, 3)
+  dataImportacao DateTime @default(now()) @map("data_importacao")
+  produto        Produto  @relation(fields: [produtoId], references: [id])
+
+  @@unique([produtoId, dataReferencia])
+  @@index([dataReferencia])
+  @@map("estoque_snapshot")
+}
+
 model HistoricoVenda {
-  id                 Int      @id @default(autoincrement()) @map("id_historico")
-  produtoId          Int      @map("id_produto")
-  mesReferencia      Int      @map("mes_referencia")
-  anoReferencia      Int      @map("ano_referencia")
-  quantidadeVendida  Int      @map("quantidade_vendida")
-  produto            Produto  @relation(fields: [produtoId], references: [id])
+  id                Int     @id @default(autoincrement()) @map("id_historico")
+  produtoId         Int     @map("id_produto")
+  mesReferencia     Int     @map("mes_referencia")
+  anoReferencia     Int     @map("ano_referencia")
+  quantidadeVendida Int     @map("quantidade_vendida")
+  produto           Produto @relation(fields: [produtoId], references: [id])
+
   @@unique([produtoId, mesReferencia, anoReferencia])
   @@map("historico_venda")
 }
 
+model EntradaMensal {
+  id                Int      @id @default(autoincrement()) @map("id_entrada_mensal")
+  produtoId         Int      @map("id_produto")
+  mesReferencia     Int      @map("mes_referencia")
+  anoReferencia     Int      @map("ano_referencia")
+  quantidadeEntrada Int      @map("quantidade_entrada")
+  valorEntrada      Decimal  @map("valor_entrada") @db.Decimal(12, 2)
+  dataImportacao    DateTime @default(now()) @map("data_importacao")
+  produto           Produto  @relation(fields: [produtoId], references: [id])
+
+  @@unique([produtoId, mesReferencia, anoReferencia])
+  @@index([anoReferencia, mesReferencia])
+  @@map("entrada_mensal")
+}
+
+model Venda {
+  id             Int         @id @default(autoincrement()) @map("id_venda")
+  documento      String?
+  data           DateTime
+  valorDocumento Decimal?    @map("valor_documento") @db.Decimal(12, 2)
+  vendedor       String?
+  caixa          String?
+  dataImportacao DateTime    @default(now()) @map("data_importacao")
+  itens          ItemVenda[]
+
+  @@index([documento])
+  @@index([data])
+  @@map("venda")
+}
+
+model ItemVenda {
+  id           Int      @id @default(autoincrement()) @map("id_item_venda")
+  vendaId      Int      @map("id_venda")
+  produtoId    Int      @map("id_produto")
+  quantidade   Int
+  valorLiquido Decimal  @map("valor_liquido") @db.Decimal(12, 2)
+  valorBruto   Decimal? @map("valor_bruto") @db.Decimal(12, 2)
+  desconto     Decimal? @db.Decimal(12, 2)
+  venda        Venda    @relation(fields: [vendaId], references: [id])
+  produto      Produto  @relation(fields: [produtoId], references: [id])
+
+  @@index([produtoId])
+  @@map("item_venda")
+}
+
 model Fornecedor {
-  id                 Int                 @id @default(autoincrement()) @map("id_fornecedor")
-  nome               String
-  cnpj               String?             @unique
-  telefone           String?
-  email              String?
-  pedidos            PedidoCompra[]
+  id            Int             @id @default(autoincrement()) @map("id_fornecedor")
+  codigoExterno String?         @unique @map("codigo_externo")
+  nome          String
+  cnpj          String?         @unique
+  telefone      String?
+  email         String?
+  entradas      EntradaCompra[]
+  pedidos       PedidoCompra[]
+
   @@map("fornecedor")
 }
 
+model EntradaCompra {
+  id             Int                 @id @default(autoincrement()) @map("id_entrada_compra")
+  documento      String?
+  fornecedorId   Int?                @map("id_fornecedor")
+  data           DateTime
+  filial         String?
+  totalNota      Decimal?            @map("total_nota") @db.Decimal(12, 2)
+  dataImportacao DateTime            @default(now()) @map("data_importacao")
+  fornecedor     Fornecedor?         @relation(fields: [fornecedorId], references: [id])
+  itens          ItemEntradaCompra[]
+
+  @@index([documento])
+  @@index([data])
+  @@map("entrada_compra")
+}
+
+model ItemEntradaCompra {
+  id              Int           @id @default(autoincrement()) @map("id_item_entrada_compra")
+  entradaCompraId Int           @map("id_entrada_compra")
+  produtoId       Int           @map("id_produto")
+  quantidade      Int
+  valorUnitario   Decimal?      @map("valor_unitario") @db.Decimal(12, 2)
+  valorTotal      Decimal?      @map("valor_total") @db.Decimal(12, 2)
+  desconto        Decimal?      @db.Decimal(12, 2)
+  entradaCompra   EntradaCompra @relation(fields: [entradaCompraId], references: [id])
+  produto         Produto       @relation(fields: [produtoId], references: [id])
+
+  @@index([produtoId])
+  @@map("item_entrada_compra")
+}
+
 model ParametroReposicao {
-  id                 Int                 @id @default(autoincrement()) @map("id_parametro")
-  margemSeguranca    Decimal             @map("margem_seguranca") @db.Decimal(5, 2)
+  id                  Int                @id @default(autoincrement()) @map("id_parametro")
+  margemSeguranca     Decimal            @map("margem_seguranca") @db.Decimal(5, 2)
+  coberturaDesejadaDias Decimal          @default(30) @map("cobertura_desejada_dias") @db.Decimal(10, 2)
   periodoAnaliseMeses Int                @map("periodo_analise_meses")
-  estoqueMinimoPadrao Int               @map("estoque_minimo_padrao")
-  calculos           CalculoReposicao[]
+  estoqueMinimoPadrao Int                @map("estoque_minimo_padrao")
+  calculos            CalculoReposicao[]
+
   @@map("parametro_reposicao")
 }
 
 model CalculoReposicao {
-  id                 Int                 @id @default(autoincrement()) @map("id_calculo")
-  parametroId        Int                 @map("id_parametro")
-  produtoId          Int                 @map("id_produto")
-  dataCalculo        DateTime            @default(now()) @map("data_calculo")
-  demandaMedia      Decimal             @map("demanda_media") @db.Decimal(10, 2)
-  quantidadeRecomendada Int              @map("quantidade_recomendada")
-  riscoFalta         Boolean             @map("risco_falta")
-  parametro          ParametroReposicao @relation(fields: [parametroId], references: [id])
-  produto            Produto             @relation(fields: [produtoId], references: [id])
-  sugestoes          SugestaoCompra[]
+  id                    Int                @id @default(autoincrement()) @map("id_calculo")
+  parametroId           Int                @map("id_parametro")
+  relatorioId           Int                @map("id_relatorio")
+  produtoId             Int                @map("id_produto")
+  dataCalculo           DateTime           @default(now()) @map("data_calculo")
+  mesReferencia         Int                @map("mes_referencia")
+  anoReferencia         Int                @map("ano_referencia")
+  mesesHistorico        Int                @map("meses_historico")
+  demandaMedia          Decimal            @map("demanda_media") @db.Decimal(20, 6)
+  demandaMediaDiaria    Decimal            @map("demanda_media_diaria") @db.Decimal(20, 10)
+  estoqueAtual          Decimal            @map("estoque_atual") @db.Decimal(20, 3)
+  coberturaDias         Decimal?           @map("cobertura_dias") @db.Decimal(20, 6)
+  coberturaDesejadaDias Decimal            @map("cobertura_desejada_dias") @db.Decimal(10, 2)
+  margemSeguranca       Decimal            @map("margem_seguranca") @db.Decimal(10, 2)
+  estoqueSeguranca      Decimal            @map("estoque_seguranca") @db.Decimal(20, 6)
+  estoqueAlvo           Decimal            @map("estoque_alvo") @db.Decimal(20, 6)
+  quantidadeCalculada   Decimal            @map("quantidade_calculada") @db.Decimal(20, 6)
+  quantidadeRecomendada Int                @map("quantidade_recomendada")
+  riscoFalta            Boolean            @map("risco_falta")
+  risco                 RiscoReposicao     @map("risco")
+  confianca             ConfiancaReposicao @map("confianca")
+  historicoInsuficiente Boolean            @map("historico_insuficiente")
+  warnings              Json?
+  parametro             ParametroReposicao @relation(fields: [parametroId], references: [id])
+  relatorio             RelatorioReposicao @relation(fields: [relatorioId], references: [id])
+  produto               Produto            @relation(fields: [produtoId], references: [id])
+  sugestoes             SugestaoCompra[]
+
+  @@unique([relatorioId, produtoId])
+  @@index([anoReferencia, mesReferencia])
+  @@index([risco])
   @@map("calculo_reposicao")
 }
 
 model SugestaoCompra {
-  id                 Int               @id @default(autoincrement()) @map("id_sugestao")
-  calculoId          Int               @map("id_calculo")
-  produtoId          Int               @map("id_produto")
-  dataSugestao      DateTime          @default(now()) @map("data_sugestao")
-  quantidadeSugerida Int              @map("quantidade_sugerida")
-  status             StatusSugestao    @default(PENDENTE)
-  calculo            CalculoReposicao  @relation(fields: [calculoId], references: [id])
-  produto            Produto           @relation(fields: [produtoId], references: [id])
+  id                 Int                 @id @default(autoincrement()) @map("id_sugestao")
+  calculoId          Int                 @map("id_calculo")
+  produtoId          Int                 @map("id_produto")
+  dataSugestao       DateTime            @default(now()) @map("data_sugestao")
+  quantidadeSugerida Int                 @map("quantidade_sugerida")
+  status             StatusSugestao      @default(PENDENTE)
+  calculo            CalculoReposicao    @relation(fields: [calculoId], references: [id])
+  produto            Produto             @relation(fields: [produtoId], references: [id])
   itensPedido        ItemPedidoCompra[]
   relatorios         RelatorioSugestao[]
+
   @@map("sugestao_compra")
 }
 
 model PedidoCompra {
-  id                 Int                 @id @default(autoincrement()) @map("id_pedido")
-  fornecedorId       Int                 @map("id_fornecedor")
-  dataPedido         DateTime            @default(now()) @map("data_pedido")
-  status             StatusPedido        @default(ABERTO)
-  valorTotal         Decimal             @default(0) @map("valor_total") @db.Decimal(12, 2)
-  fornecedor         Fornecedor          @relation(fields: [fornecedorId], references: [id])
-  itens              ItemPedidoCompra[]
+  id           Int                @id @default(autoincrement()) @map("id_pedido")
+  fornecedorId Int?               @map("id_fornecedor")
+  dataPedido   DateTime           @default(now()) @map("data_pedido")
+  status       StatusPedido       @default(PENDENTE)
+  valorTotal   Decimal?           @map("valor_total") @db.Decimal(12, 2)
+  fornecedor   Fornecedor?        @relation(fields: [fornecedorId], references: [id])
+  itens        ItemPedidoCompra[]
+
   @@map("pedido_compra")
 }
 
 model ItemPedidoCompra {
-  id                 Int              @id @default(autoincrement()) @map("id_item_pedido")
-  pedidoId           Int              @map("id_pedido")
-  produtoId          Int              @map("id_produto")
-  sugestaoId         Int?             @map("id_sugestao")
-  quantidade         Int
-  precoUnitario      Decimal          @map("preco_unitario") @db.Decimal(10, 2)
-  subtotal           Decimal          @db.Decimal(12, 2)
-  pedido             PedidoCompra     @relation(fields: [pedidoId], references: [id])
-  produto            Produto          @relation(fields: [produtoId], references: [id])
-  sugestao           SugestaoCompra?  @relation(fields: [sugestaoId], references: [id])
+  id            Int             @id @default(autoincrement()) @map("id_item_pedido")
+  pedidoId      Int             @map("id_pedido")
+  produtoId     Int             @map("id_produto")
+  sugestaoId    Int?            @map("id_sugestao")
+  quantidade    Int
+  precoUnitario Decimal?        @map("preco_unitario") @db.Decimal(10, 2)
+  subtotal      Decimal?        @db.Decimal(12, 2)
+  pedido        PedidoCompra    @relation(fields: [pedidoId], references: [id])
+  produto       Produto         @relation(fields: [produtoId], references: [id])
+  sugestao      SugestaoCompra? @relation(fields: [sugestaoId], references: [id])
+
   @@map("item_pedido_compra")
 }
 
 model RelatorioReposicao {
-  id                 Int                 @id @default(autoincrement()) @map("id_relatorio")
-  dataGeracao        DateTime            @default(now()) @map("data_geracao")
-  periodoReferencia  String              @map("periodo_referencia")
-  sugestoes          RelatorioSugestao[]
+  id                Int                 @id @default(autoincrement()) @map("id_relatorio")
+  dataGeracao       DateTime            @default(now()) @map("data_geracao")
+  periodoReferencia String              @map("periodo_referencia")
+  calculos          CalculoReposicao[]
+  sugestoes         RelatorioSugestao[]
+
+  @@unique([periodoReferencia])
   @@map("relatorio_reposicao")
 }
 
 model RelatorioSugestao {
-  relatorioId        Int               @map("id_relatorio")
-  sugestaoId         Int               @map("id_sugestao")
-  relatorio          RelatorioReposicao @relation(fields: [relatorioId], references: [id])
-  sugestao            SugestaoCompra   @relation(fields: [sugestaoId], references: [id])
+  relatorioId Int                @map("id_relatorio")
+  sugestaoId  Int                @map("id_sugestao")
+  relatorio   RelatorioReposicao @relation(fields: [relatorioId], references: [id])
+  sugestao    SugestaoCompra     @relation(fields: [sugestaoId], references: [id])
+
   @@id([relatorioId, sugestaoId])
   @@map("relatorio_sugestao")
 }

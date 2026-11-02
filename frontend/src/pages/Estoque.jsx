@@ -9,8 +9,8 @@ import { useToast } from '../components/ToastContext.jsx';
 import { deleteProduto, listProdutos } from '../services/produtoService.js';
 import { createEstoque, listEstoque } from '../services/estoqueService.js';
 
-const typeLabel = { GENERICO: 'Genérico', SIMILAR: 'Similar', MARCA: 'Marca' };
-const chipTone = { GENERICO: 'blue', SIMILAR: 'green', MARCA: 'amber' };
+const typeLabel = { GENERICO: 'Genérico', SIMILAR: 'Similar', MARCA: 'Marca', NAO_CLASSIFICADO: 'Não classificado' };
+const chipTone = { GENERICO: 'blue', SIMILAR: 'green', MARCA: 'amber', NAO_CLASSIFICADO: 'gray' };
 const money = (value) => Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export default function Estoque() {

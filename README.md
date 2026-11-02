@@ -50,6 +50,19 @@ Para preparar o Prisma depois de configurar um PostgreSQL local, preencha `DATAB
 
 Autenticação/autorização, banco de produção, importação definitiva, cálculo definitivo de reposição, geração persistida de pedidos, relatórios exportáveis e integração com IA ainda não foram implementados. O motor determinístico e a IA futura permanecem separados por decisão arquitetural.
 
+## Fontes de dados da farmácia
+
+O PharmaSmart trabalhará futuramente com três conjuntos de dados: posição de
+estoque, entradas de mercadoria e vendas detalhadas.
+
+- `codigoExterno` conecta produtos entre os relatórios de origem.
+- `qem1`/`vem1` apresentam forte evidência de entrada, enquanto `qsm1`/`vsm1`
+  não serão usados como fonte oficial de vendas.
+- Vendas serão obtidas do relatório detalhado.
+- Entradas podem conter linhas repetidas por causa de múltiplos códigos de
+  barras; a deduplicação será responsabilidade do futuro importador.
+- Valores anômalos deverão gerar alertas durante a importação.
+
 ## Frontend conectado
 
 As páginas `Estoque / Produtos` e `Fornecedores` consomem a API real com
@@ -79,3 +92,8 @@ A API REST roda por padrão em `http://localhost:3001`.
 - `DELETE /api/fornecedores/:id`: exclui somente fornecedores sem pedidos relacionados.
 
 As respostas de erro seguem o formato `{ "error": { "code": "...", "message": "..." } }`. A validação é feita com Zod e o status do estoque é calculado dinamicamente; ele ainda não representa previsão de ruptura por demanda.
+
+## Seguran�a do banco
+
+Consulte [docs/database-safety.md](docs/database-safety.md) para o processo local de shadow, backup e restore.
+

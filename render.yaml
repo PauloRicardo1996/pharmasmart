@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: pharmasmart
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SHADOW_DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true

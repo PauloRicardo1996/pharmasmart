@@ -1,4 +1,4 @@
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+export const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:3001/api');
 
 export class ApiError extends Error {
   constructor(message, { status = 0, code = 'NETWORK_ERROR', details } = {}) {
@@ -12,9 +12,11 @@ export class ApiError extends Error {
 export async function request(path, options = {}) {
   let response;
   try {
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
     response = await fetch(`${API_URL}${path}`, {
       ...options,
-      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+      credentials: 'include',
+      headers: isFormData ? { ...(options.headers || {}) } : { 'Content-Type': 'application/json', ...(options.headers || {}) },
     });
   } catch {
     throw new ApiError('Não foi possível conectar ao servidor do PharmaSmart.');
@@ -30,4 +32,3 @@ export async function request(path, options = {}) {
 }
 
 export function getHealth() { return request('/health'); }
-

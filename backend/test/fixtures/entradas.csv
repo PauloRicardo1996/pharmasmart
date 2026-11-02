@@ -1,0 +1,4 @@
+produto,documento,data,quantidade,valor,codigo_sujeito,razao_social,cod_barra
+1001,NF-1,15/08/2026,4,10,S1,Fornecedor A,7890001
+1001,NF-1,15/08/2026,4,10,S1,Fornecedor A,7890002
+1002,NF-2,20/08/2026,2,5,S1,Fornecedor A,7890003

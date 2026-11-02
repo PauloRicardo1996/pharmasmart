@@ -1,0 +1,15 @@
+﻿import assert from 'node:assert/strict';
+import test, { after, before } from 'node:test';
+import bcrypt from 'bcryptjs';
+import { prisma } from '../src/lib/prisma.js';
+import app from '../src/app.js';
+let server; let base; let manager; let pharmacist; const suffix = String(Date.now());
+async function call(path, options = {}) { const response = await fetch(base + path, options); const body = await response.json().catch(() => null); return { response, body, cookie: response.headers.get('set-cookie')?.split(';')[0] }; }
+function auth(cookie, options = {}) { return { ...options, headers: { ...(options.headers || {}), Cookie: cookie } }; }
+before(async () => { server = app.listen(0); await new Promise((resolve) => server.once('listening', resolve)); base = 'http://127.0.0.1:' + server.address().port; manager = await prisma.usuario.create({ data: { nome: 'Auditoria Gerente', login: 'gerente-' + suffix, perfil: 'GERENTE', senhaHash: await bcrypt.hash('senha-segura-123', 4) } }); pharmacist = await prisma.usuario.create({ data: { nome: 'Auditoria Farmaceutico', login: 'farmaceutico-' + suffix, perfil: 'FARMACEUTICO', senhaHash: await bcrypt.hash('senha-segura-123', 4) } }); });
+test('auditoria registra login, associa usuário e pagina', async () => { const login = await call('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ login: manager.login, senha: 'senha-segura-123' }) }); assert.equal(login.response.status, 200); const list = await call('/api/auditoria?acao=LOGIN&usuarioId=' + manager.id + '&page=1&limit=1', auth(login.cookie)); assert.equal(list.response.status, 200); assert.equal(list.body.pagination.limit, 1); assert.ok(list.body.data.length >= 1); assert.equal(list.body.data[0].usuario.id, manager.id); assert.equal(list.body.data[0].usuario.login, manager.login); assert.equal(list.body.data[0].dados?.senha, undefined); assert.equal(list.body.data[0].dados?.senhaHash, undefined); });
+test('somente gerente consulta e auditoria não possui mutações', async () => { const login = await call('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ login: pharmacist.login, senha: 'senha-segura-123' }) }); assert.equal((await call('/api/auditoria', auth(login.cookie))).response.status, 403); const managerLogin = await call('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ login: manager.login, senha: 'senha-segura-123' }) }); assert.equal((await call('/api/auditoria/1', auth(managerLogin.cookie, { method: 'PUT' }))).response.status, 404); });
+after(async () => { const users = await prisma.usuario.findMany({ where: { login: { endsWith: suffix } }, select: { id: true } }); await prisma.auditoria.deleteMany({ where: { usuarioId: { in: users.map((user) => user.id) } } }); await prisma.usuario.deleteMany({ where: { id: { in: users.map((user) => user.id) } } }); if (server) await new Promise((resolve) => server.close(resolve)); await prisma.$disconnect(); });
+
+
+

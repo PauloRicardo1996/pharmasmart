@@ -43,7 +43,7 @@ O [package.json](../package.json) da raiz define:
 - Build: `npm run build`
 - Start: `npm start`
 
-O build instala as dependências de `backend/` e `frontend/`, gera o Prisma Client e executa `vite build`. O start executa somente o Express de produção.
+O build instala as dependências de `backend/` e as dependências de desenvolvimento de `frontend/` (incluindo o Vite), gera o Prisma Client e executa `vite build`. O start executa somente o Express de produção.
 
 O [render.yaml](../render.yaml) configura o Web Service `pharmasmart`, deploy automático da branch `main` e health check em `/api/health`.
 

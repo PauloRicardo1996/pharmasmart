@@ -2,8 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'node:fs';
 import path from 'node:path';
-import dns from 'node:dns/promises';
-import net from 'node:net';
 import { fileURLToPath } from 'node:url';
 import healthRoutes from './routes/healthRoutes.js';
 import produtoRoutes from './routes/produtoRoutes.js';
@@ -41,22 +39,6 @@ app.use((req, res, next) => {
   return next(new Error('Origin not allowed.'));
 });
 app.use(express.json());
-app.get('/api/diagnostic/render-neon', async (_req, res) => {
-  try {
-    const host = new URL(process.env.DATABASE_URL).hostname;
-    const addresses = await dns.lookup(host, { all: true });
-    const tcp = await new Promise((resolve) => {
-      const socket = net.createConnection({ host, port: 5432 });
-      const finish = (ok) => { socket.destroy(); resolve(ok); };
-      socket.setTimeout(5000, () => finish(false));
-      socket.once('connect', () => finish(true));
-      socket.once('error', () => finish(false));
-    });
-    return res.json({ RENDER_DNS: addresses.length ? 'OK' : 'FAIL', RENDER_TCP_5432: tcp ? 'OK' : 'FAIL' });
-  } catch {
-    return res.json({ RENDER_DNS: 'FAIL', RENDER_TCP_5432: 'FAIL' });
-  }
-});
 app.get('/', (_req, res) => { if (isProduction && fs.existsSync(path.join(frontendDist, 'index.html'))) return res.sendFile(path.join(frontendDist, 'index.html')); return res.json({ application: 'PharmaSmart', message: 'API online' }); });
 if (fs.existsSync(frontendDist)) {
   app.use(express.static(frontendDist));
